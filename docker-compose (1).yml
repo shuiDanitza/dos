@@ -1,0 +1,69 @@
+version: '3'
+
+services:
+    
+  bitbucket:
+    image: "atlassian/bitbucket-server:5.10.2"
+    container_name: bitbucket
+    restart: always
+    ports:
+      - "7990:7990"
+      - "7999:7999"
+    environment:
+      - BITBUCKET_HOME=/var/atlassian/application-data/bitbucket/
+    volumes:
+      - ./bitbucket-data:/var/atlassian/application-data/bitbucket
+    networks:
+      - red1
+
+  jira:
+    image: cptactionhank/atlassian-jira:7.12.2
+    container_name: jira
+    restart: always
+    ports:
+      - "6080:8080"
+    links:
+      - database
+    volumes:
+      - ./jira-data:/var/atlassian/application-data/jira
+    networks:
+      - red1
+
+  confluence:
+    image: idalko/atlassian-confluence
+    container_name: confluence
+    environment:
+      - DISABLE_NOTIFICATIONS=TRUE
+      - CONF_ARGS=-Datlassian.plugins.enable.wait=300
+    volumes:
+      - ./data:/opt/atlassian/confluence/data
+    ports:
+      - 8090:8090
+    restart: always
+    networks:
+      - red1
+
+  database:
+    image: postgres:9.6
+    container_name: postgresql
+    restart: always
+    ports:
+      - "5430:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./postgresql-data:/var/lib/postgresql/data
+    networks:
+      - red1
+
+volumes:
+  bitbucket-data:
+  jira-data:
+  postgresql-data:
+  data:
+
+networks:
+  red1:
